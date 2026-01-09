@@ -1,22 +1,48 @@
 package ci553.happyshop.client;
 
-import ci553.happyshop.server.DatabaseRW;
-import ci553.happyshop.server.OrderHub;
-import ci553.happyshop.shoppingcenter.ShoppingCenterView;
+import ci553.happyshop.client.shoppingcenter.ShoppingCenterView;
+import ci553.happyshop.dbAccess.DatabaseRW;
+import ci553.happyshop.dbAccess.DatabaseRWFactory;
+import ci553.happyshop.middle.OrderHub;
+import javafx.application.Application;
+import javafx.stage.Stage;
+
+import javax.swing.SwingUtilities;
 
 /**
- * Main entry point for the Happy Shop Shopping Center application.
+ * Main Application Launcher - Modernized Shopping Center
+ * Launches ONLY the new unified Shopping Center interface
+ * All old clients have been removed - this is a clean, modern system
+ *
+ * @version 4.0
+ * @author Arielli Ortega, University of Brighton
  */
-public class Main {
+public class Main extends Application {
+
     public static void main(String[] args) {
-        // Initialize database
-        DatabaseRW database = new DatabaseRW();
-        
-        // Initialize order hub
-        OrderHub orderHub = new OrderHub(database);
-        
-        // Launch Shopping Center View
-        ShoppingCenterView shoppingCenter = new ShoppingCenterView(database, orderHub);
-        shoppingCenter.setVisible(true);
+        // Launch Shopping Center using Swing
+        SwingUtilities.invokeLater(() -> {
+            // Initialize backend components
+            DatabaseRW databaseRW = DatabaseRWFactory.createDatabaseRW();
+            OrderHub orderHub = OrderHub.getOrderHub();
+            orderHub.initializeOrderMap();
+            
+            // Launch the modernized Shopping Center
+            ShoppingCenterView shoppingCenter = new ShoppingCenterView(databaseRW, orderHub);
+            shoppingCenter.setVisible(true);
+        });
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        // JavaFX application start - redirects to Swing Shopping Center
+        SwingUtilities.invokeLater(() -> {
+            DatabaseRW databaseRW = DatabaseRWFactory.createDatabaseRW();
+            OrderHub orderHub = OrderHub.getOrderHub();
+            orderHub.initializeOrderMap();
+            
+            ShoppingCenterView shoppingCenter = new ShoppingCenterView(databaseRW, orderHub);
+            shoppingCenter.setVisible(true);
+        });
     }
 }
