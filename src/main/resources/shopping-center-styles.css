@@ -75,7 +75,6 @@
     -fx-font-size: 12px;
 }
 
-/* Header Styles */
 .header {
     -fx-background-color: rgba(19, 9, 35, 0.8);
     -fx-border-color: rgba(255, 255, 255, 0.06);
@@ -117,7 +116,6 @@
     -fx-pref-height: 38;
 }
 
-/* Node Card Styles */
 .node-card {
     -fx-background-color: linear-gradient(to bottom, #1c0f34, #160b2b);
     -fx-border-color: rgba(255, 255, 255, 0.08);
@@ -132,13 +130,6 @@
     -fx-text-fill: #eae6f7;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
-}
-
-.node-dot {
-    -fx-background-color: #7c4dff;
-    -fx-background-radius: 50%;
-    -fx-pref-width: 12;
-    -fx-pref-height: 12;
 }
 
 .chip {
@@ -158,26 +149,6 @@
     -fx-text-fill: #eae6f7;
 }
 
-.chip-mini {
-    -fx-background-color: #a07cff;
-    -fx-background-radius: 50%;
-    -fx-pref-width: 8;
-    -fx-pref-height: 8;
-}
-
-.chip-mini.login {
-    -fx-background-color: #5c2cf3;
-}
-
-.chip-mini.delivery {
-    -fx-background-color: #5ce6b8;
-}
-
-.chip-mini.danger {
-    -fx-background-color: #ff5a8a;
-}
-
-/* Form Styles */
 .form-container {
     -fx-background-color: #1c0f34;
     -fx-border-color: rgba(255, 255, 255, 0.08);
@@ -247,13 +218,11 @@
     -fx-background-color: rgba(255, 255, 255, 0.10);
 }
 
-/* Canvas / Content Area */
 .canvas {
     -fx-background-color: transparent;
     -fx-padding: 28;
 }
 
-/* Pill Badge */
 .pill {
     -fx-background-color: rgba(124, 77, 255, 0.18);
     -fx-border-color: rgba(124, 77, 255, 0.28);
@@ -266,7 +235,6 @@
     -fx-font-weight: bold;
 }
 
-/* Text Area Styles */
 .text-area {
     -fx-background-color: rgba(255, 255, 255, 0.06);
     -fx-border-color: rgba(255, 255, 255, 0.10);
@@ -286,7 +254,6 @@
     -fx-border-width: 2;
 }
 
-/* Scrollbar Styles */
 .scroll-bar {
     -fx-background-color: #0b0716;
 }
@@ -304,7 +271,6 @@
     -fx-background-color: #0b0716;
 }
 
-/* Footer */
 .sidebar-footer {
     -fx-text-fill: #bfb6dd;
     -fx-font-size: 12px;
