@@ -4,20 +4,18 @@ import ci553.happyshop.client.shoppingcenter.ShoppingCenterView;
 import ci553.happyshop.dbAccess.DatabaseRW;
 import ci553.happyshop.dbAccess.DatabaseRWFactory;
 import ci553.happyshop.middle.OrderHub;
-import javafx.application.Application;
-import javafx.stage.Stage;
 
 import javax.swing.SwingUtilities;
 
 /**
- * Main Application Launcher - Modernized Shopping Center
- * Launches ONLY the new unified Shopping Center interface
- * All old clients have been removed - this is a clean, modern system
+ * Main Application Launcher - Fully Modernized Shopping Center
+ * Launches ONLY the unified Shopping Center interface with Welcome Screen
+ * All old HappyShop clients removed - clean, modern system
  *
- * @version 4.0
+ * @version 5.0 - Complete Modernization
  * @author Arielli Ortega, University of Brighton
  */
-public class Main extends Application {
+public class Main {
 
     public static void main(String[] args) {
         // Launch Shopping Center using Swing
@@ -27,20 +25,7 @@ public class Main extends Application {
             OrderHub orderHub = OrderHub.getOrderHub();
             orderHub.initializeOrderMap();
             
-            // Launch the modernized Shopping Center
-            ShoppingCenterView shoppingCenter = new ShoppingCenterView(databaseRW, orderHub);
-            shoppingCenter.setVisible(true);
-        });
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        // JavaFX application start - redirects to Swing Shopping Center
-        SwingUtilities.invokeLater(() -> {
-            DatabaseRW databaseRW = DatabaseRWFactory.createDatabaseRW();
-            OrderHub orderHub = OrderHub.getOrderHub();
-            orderHub.initializeOrderMap();
-            
+            // Launch the modernized Shopping Center with Welcome Screen
             ShoppingCenterView shoppingCenter = new ShoppingCenterView(databaseRW, orderHub);
             shoppingCenter.setVisible(true);
         });
