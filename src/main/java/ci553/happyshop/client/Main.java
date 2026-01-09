@@ -1,14 +1,13 @@
 package ci553.happyshop.client;
 
 import ci553.happyshop.client.customer.*;
-
 import ci553.happyshop.client.emergency.EmergencyExit;
 import ci553.happyshop.client.orderTracker.OrderTracker;
 import ci553.happyshop.client.picker.PickerController;
 import ci553.happyshop.client.picker.PickerModel;
 import ci553.happyshop.client.picker.PickerView;
-
 import ci553.happyshop.client.warehouse.*;
+import ci553.happyshop.client.shoppingcenter.*;
 import ci553.happyshop.orderManagement.OrderHub;
 import ci553.happyshop.storageAccess.DatabaseRW;
 import ci553.happyshop.storageAccess.DatabaseRWFactory;
@@ -23,13 +22,15 @@ import java.io.IOException;
  * This class launches all standalone clients (Customer, Picker, OrderTracker, Warehouse, EmergencyExit)
  * and links them together into a fully working system.
  *
+ * UPDATED: Now includes the new Shopping Center unified interface with modern dark purple theme
+ *
  * It performs essential setup tasks, such as initializing the order map in the OrderHub
  * and registering observers.
  *
  * Note: Each client type can be instantiated multiple times (e.g., calling startCustomerClient() as many times as needed)
  * to simulate a multi-user environment, where multiple clients of the same type interact with the system concurrently.
  *
- * @version 1.0
+ * @version 2.0
  * @author  Shine Shan University of Brighton
  */
 
@@ -42,6 +43,19 @@ public class Main extends Application {
     //starts the system
     @Override
     public void start(Stage window) throws IOException {
+        // Launch the new unified Shopping Center interface
+        startShoppingCenter();
+        
+        // Launch authentication views
+        startCustomerAuth();
+        startAdminAuth();
+        
+        // Launch cart and shipping views
+        startCartView();
+        startShippingView();
+        startSendingsView();
+        
+        // Original clients still available
         startCustomerClient();
         startPickerClient();
         startOrderTracker();
@@ -58,6 +72,54 @@ public class Main extends Application {
         startWarehouseClient();
 
         startEmergencyExit();
+    }
+
+    /** 
+     * NEW: Shopping Center unified interface with modern GUI
+     */
+    private void startShoppingCenter() {
+        ShoppingCenterView shoppingCenter = new ShoppingCenterView();
+        shoppingCenter.start(new Stage());
+    }
+    
+    /**
+     * NEW: Customer Authentication (Registration, Login, Forgot Password)
+     */
+    private void startCustomerAuth() {
+        CustomerAuthView customerAuth = new CustomerAuthView();
+        customerAuth.start(new Stage());
+    }
+    
+    /**
+     * NEW: Admin Authentication
+     */
+    private void startAdminAuth() {
+        AdminAuthView adminAuth = new AdminAuthView();
+        adminAuth.start(new Stage());
+    }
+    
+    /**
+     * NEW: Shopping Cart View
+     */
+    private void startCartView() {
+        CartView cart = new CartView();
+        cart.start(new Stage());
+    }
+    
+    /**
+     * NEW: Shipping Management View
+     */
+    private void startShippingView() {
+        ShippingView shipping = new ShippingView();
+        shipping.start(new Stage());
+    }
+    
+    /**
+     * NEW: Order Tracking / Sendings View
+     */
+    private void startSendingsView() {
+        SendingsView sendings = new SendingsView();
+        sendings.start(new Stage());
     }
 
     /** The customer GUI -search prodduct, add to trolley, cancel/submit trolley, view receipt
@@ -157,6 +219,3 @@ public class Main extends Application {
         EmergencyExit.getEmergencyExit();
     }
 }
-
-
-
