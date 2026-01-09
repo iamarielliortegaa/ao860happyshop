@@ -1,321 +1,729 @@
 package ci553.happyshop.client.shoppingcenter;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.stage.Stage;
+import ci553.happyshop.catalogue.Product;
+import ci553.happyshop.dbAccess.DatabaseRW;
+import ci553.happyshop.middle.OrderHub;
+import ci553.happyshop.util.ProductListFormatter;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
- * ShoppingCenterView - Main unified interface with sidebar navigation
- * Implements the dark purple theme shopping center design
+ * Integrated Shopping Center View with sidebar navigation
+ * Provides Customer Auth, Admin Auth, Shopping Cart, Shipping, and Order Tracking
+ * Dark Purple Theme
  */
-public class ShoppingCenterView {
-    private Stage stage;
-    private BorderPane root;
-    private StackPane contentArea;
-    private String currentUser = "Arielli";
+public class ShoppingCenterView extends JFrame implements Observer {
+    private static final long serialVersionUID = 1L;
     
-    // Navigation pages
-    private Pane homePage;
-    private Pane shopPage;
-    private Pane profilePage;
-    private Pane settingsPage;
-
-    public void start(Stage window) {
-        this.stage = window;
+    // Color scheme - Dark Purple Theme
+    private static final Color DARK_PURPLE = new Color(45, 20, 70);
+    private static final Color MEDIUM_PURPLE = new Color(75, 40, 110);
+    private static final Color LIGHT_PURPLE = new Color(140, 100, 180);
+    private static final Color ACCENT_PURPLE = new Color(180, 140, 220);
+    private static final Color TEXT_WHITE = new Color(240, 240, 250);
+    private static final Color HOVER_PURPLE = new Color(95, 60, 130);
+    
+    // Components
+    private JPanel sidebarPanel;
+    private JPanel contentPanel;
+    private CardLayout cardLayout;
+    
+    // Navigation buttons
+    private JButton btnCustomerAuth;
+    private JButton btnAdminAuth;
+    private JButton btnShoppingCart;
+    private JButton btnShipping;
+    private JButton btnOrderTracking;
+    private JButton btnProducts;
+    
+    // Content panels
+    private JPanel customerAuthPanel;
+    private JPanel adminAuthPanel;
+    private JPanel shoppingCartPanel;
+    private JPanel shippingPanel;
+    private JPanel orderTrackingPanel;
+    private JPanel productsPanel;
+    
+    // Data components
+    private DatabaseRW databaseRW;
+    private OrderHub orderHub;
+    private ProductListFormatter productListFormatter;
+    
+    // User session
+    private String currentUser = null;
+    private boolean isAdmin = false;
+    
+    // Shopping cart
+    private List<Product> shoppingCart;
+    private JTextArea cartDisplayArea;
+    private JLabel cartTotalLabel;
+    
+    // Product display
+    private JTextArea productDisplayArea;
+    
+    // Order tracking
+    private JTextArea orderTrackingArea;
+    
+    /**
+     * Constructor
+     */
+    public ShoppingCenterView(DatabaseRW db, OrderHub hub) {
+        this.databaseRW = db;
+        this.orderHub = hub;
+        this.productListFormatter = new ProductListFormatter();
+        this.shoppingCart = new ArrayList<>();
         
-        root = new BorderPane();
-        root.getStyleClass().add("root");
+        setupUI();
+        setTitle("Happy Shop - Shopping Center");
+        setSize(1200, 800);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+    }
+    
+    /**
+     * Setup the main UI
+     */
+    private void setupUI() {
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(DARK_PURPLE);
         
         // Create sidebar
-        VBox sidebar = createSidebar();
-        root.setLeft(sidebar);
+        createSidebar();
         
-        // Create header
-        HBox header = createHeader();
+        // Create content area with CardLayout
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
+        contentPanel.setBackground(DARK_PURPLE);
         
-        // Create content area
-        contentArea = new StackPane();
-        contentArea.getStyleClass().add("canvas");
+        // Create all panels
+        createCustomerAuthPanel();
+        createAdminAuthPanel();
+        createProductsPanel();
+        createShoppingCartPanel();
+        createShippingPanel();
+        createOrderTrackingPanel();
         
-        // Create pages
-        createPages();
+        // Add panels to content area
+        contentPanel.add(customerAuthPanel, "CUSTOMER_AUTH");
+        contentPanel.add(adminAuthPanel, "ADMIN_AUTH");
+        contentPanel.add(productsPanel, "PRODUCTS");
+        contentPanel.add(shoppingCartPanel, "SHOPPING_CART");
+        contentPanel.add(shippingPanel, "SHIPPING");
+        contentPanel.add(orderTrackingPanel, "ORDER_TRACKING");
         
-        // Show shop page by default
-        showPage(shopPage);
+        // Add components to frame
+        add(sidebarPanel, BorderLayout.WEST);
+        add(contentPanel, BorderLayout.CENTER);
         
-        // Combine header and content
-        VBox mainContent = new VBox(header, contentArea);
-        VBox.setVgrow(contentArea, Priority.ALWAYS);
-        root.setCenter(mainContent);
-        
-        Scene scene = new Scene(root, 1200, 700);
-        scene.getStylesheets().add(getClass().getResource("/shopping-center-styles.css").toExternalForm());
-        
-        window.setScene(scene);
-        window.setTitle("Shopping Center");
-        window.show();
+        // Show customer auth by default
+        cardLayout.show(contentPanel, "CUSTOMER_AUTH");
     }
     
-    private VBox createSidebar() {
-        VBox sidebar = new VBox(20);
-        sidebar.getStyleClass().add("sidebar");
-        sidebar.setPrefWidth(280);
-        sidebar.setAlignment(Pos.TOP_LEFT);
+    /**
+     * Create sidebar navigation
+     */
+    private void createSidebar() {
+        sidebarPanel = new JPanel();
+        sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
+        sidebarPanel.setBackground(MEDIUM_PURPLE);
+        sidebarPanel.setPreferredSize(new Dimension(220, 800));
+        sidebarPanel.setBorder(new EmptyBorder(20, 10, 20, 10));
         
-        // Brand
-        HBox brand = new HBox(12);
-        brand.setAlignment(Pos.CENTER_LEFT);
+        // Logo/Title
+        JLabel titleLabel = new JLabel("Happy Shop");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(TEXT_WHITE);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        sidebarPanel.add(titleLabel);
         
-        Label logo = new Label("SC");
-        logo.getStyleClass().add("brand-logo");
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 30)));
         
-        Label brandName = new Label("Shopping Center");
-        brandName.getStyleClass().add("brand-name");
+        // Navigation buttons
+        btnCustomerAuth = createNavButton("Customer Login", "CUSTOMER_AUTH");
+        btnAdminAuth = createNavButton("Admin Login", "ADMIN_AUTH");
+        btnProducts = createNavButton("Browse Products", "PRODUCTS");
+        btnShoppingCart = createNavButton("Shopping Cart", "SHOPPING_CART");
+        btnShipping = createNavButton("Shipping", "SHIPPING");
+        btnOrderTracking = createNavButton("Order Tracking", "ORDER_TRACKING");
         
-        brand.getChildren().addAll(logo, brandName);
+        sidebarPanel.add(btnCustomerAuth);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebarPanel.add(btnAdminAuth);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebarPanel.add(btnProducts);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebarPanel.add(btnShoppingCart);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebarPanel.add(btnShipping);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebarPanel.add(btnOrderTracking);
         
-        // Navigation items
-        VBox nav = new VBox(8);
-        nav.getStyleClass().add("nav");
-        
-        HBox homeNav = createNavItem("🏠", "Home", "H", false);
-        HBox shopNav = createNavItem("🛍️", "Shop", null, true);
-        HBox profileNav = createNavItem("👤", "Profile", "P", false);
-        HBox settingsNav = createNavItem("⚙️", "Settings", "S", false);
-        
-        homeNav.setOnMouseClicked(e -> showPage(homePage));
-        shopNav.setOnMouseClicked(e -> showPage(shopPage));
-        profileNav.setOnMouseClicked(e -> showPage(profilePage));
-        settingsNav.setOnMouseClicked(e -> showPage(settingsPage));
-        
-        nav.getChildren().addAll(homeNav, shopNav, profileNav, settingsNav);
-        
-        // Footer
-        Label footer = new Label("© 2025 Shopping Center");
-        footer.getStyleClass().add("sidebar-footer");
-        
-        Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
-        
-        sidebar.getChildren().addAll(brand, nav, spacer, footer);
-        
-        return sidebar;
+        sidebarPanel.add(Box.createVerticalGlue());
     }
     
-    private HBox createNavItem(String icon, String label, String kbd, boolean active) {
-        HBox item = new HBox(12);
-        item.getStyleClass().add("nav-item");
-        if (active) {
-            item.getStyleClass().add("active");
-        }
-        item.setAlignment(Pos.CENTER_LEFT);
-        item.setPrefHeight(62);
+    /**
+     * Create a navigation button
+     */
+    private JButton createNavButton(String text, String panelName) {
+        JButton btn = new JButton(text);
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(200, 40));
+        btn.setBackground(LIGHT_PURPLE);
+        btn.setForeground(TEXT_WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setFont(new Font("Arial", Font.PLAIN, 14));
         
-        // Icon
-        Label iconLabel = new Label(icon);
-        iconLabel.getStyleClass().add("nav-icon");
-        iconLabel.setAlignment(Pos.CENTER);
-        iconLabel.setMinSize(38, 38);
-        
-        // Label
-        Label navLabel = new Label(label);
-        navLabel.getStyleClass().add("nav-label");
-        
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        item.getChildren().addAll(iconLabel, navLabel, spacer);
-        
-        // Keyboard shortcut or active pill
-        if (active) {
-            Label pill = new Label("Active");
-            pill.getStyleClass().add("pill");
-            item.getChildren().add(pill);
-        } else if (kbd != null) {
-            Label kbdLabel = new Label(kbd);
-            kbdLabel.getStyleClass().add("nav-kbd");
-            item.getChildren().add(kbdLabel);
-        }
-        
-        return item;
-    }
-    
-    private HBox createHeader() {
-        HBox header = new HBox(16);
-        header.getStyleClass().add("header");
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setPrefHeight(66);
-        
-        // Title
-        Label title = new Label("Shopping Center");
-        title.getStyleClass().add("title");
-        
-        // Search box
-        HBox searchBox = new HBox(10);
-        searchBox.getStyleClass().add("search-box");
-        searchBox.setAlignment(Pos.CENTER_LEFT);
-        searchBox.setMaxWidth(400);
-        HBox.setHgrow(searchBox, Priority.ALWAYS);
-        
-        Label searchIcon = new Label("🔎");
-        TextField searchField = new TextField();
-        searchField.setPromptText("Search products, orders, users…");
-        searchField.getStyleClass().add("text-field");
-        HBox.setHgrow(searchField, Priority.ALWAYS);
-        
-        searchBox.getChildren().addAll(searchIcon, searchField);
-        
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        // Profile
-        HBox profile = new HBox(14);
-        profile.setAlignment(Pos.CENTER);
-        
-        Label profileName = new Label(currentUser);
-        profileName.getStyleClass().add("profile-name");
-        
-        Circle avatar = new Circle(19);
-        avatar.getStyleClass().add("avatar");
-        avatar.setFill(Color.web("#a07cff"));
-        
-        profile.getChildren().addAll(profileName, avatar);
-        
-        header.getChildren().addAll(title, searchBox, spacer, profile);
-        
-        return header;
-    }
-    
-    private void createPages() {
-        homePage = createHomePage();
-        shopPage = createShopPage();
-        profilePage = createProfilePage();
-        settingsPage = createSettingsPage();
-    }
-    
-    private Pane createHomePage() {
-        VBox page = new VBox(20);
-        page.setAlignment(Pos.CENTER);
-        
-        Label welcome = new Label("Welcome to Shopping Center");
-        welcome.getStyleClass().add("form-title");
-        
-        page.getChildren().add(welcome);
-        return page;
-    }
-    
-    private Pane createShopPage() {
-        Pane canvas = new Pane();
-        canvas.setPrefSize(1200, 700);
-        
-        // Create node cards with positioning
-        VBox customerAuth = createNodeCard("Customer authentication", 
-            new String[]{"Registration", "Login", "Forgot password"},
-            new String[]{"", "login", "danger"});
-        customerAuth.setLayoutX(40);
-        customerAuth.setLayoutY(30);
-        
-        VBox adminAuth = createNodeCard("Admin authentication",
-            new String[]{"Login"},
-            new String[]{"login"});
-        adminAuth.setLayoutX(420);
-        adminAuth.setLayoutY(30);
-        
-        VBox cart = createNodeCard("Add to cart",
-            new String[]{"Login"},
-            new String[]{"login"});
-        cart.setLayoutX(800);
-        cart.setLayoutY(30);
-        
-        VBox shipping = createNodeCard("Shipping",
-            new String[]{"Delivery"},
-            new String[]{"delivery"});
-        shipping.setLayoutX(420);
-        shipping.setLayoutY(260);
-        
-        VBox sendings = createNodeCard("Sendings",
-            new String[]{"Delivery"},
-            new String[]{"delivery"});
-        sendings.setLayoutX(800);
-        sendings.setLayoutY(260);
-        
-        canvas.getChildren().addAll(customerAuth, adminAuth, cart, shipping, sendings);
-        
-        return canvas;
-    }
-    
-    private VBox createNodeCard(String title, String[] chipLabels, String[] chipTypes) {
-        VBox card = new VBox(12);
-        card.getStyleClass().add("node-card");
-        card.setPrefWidth(320);
-        
-        // Header
-        HBox head = new HBox(12);
-        head.setAlignment(Pos.CENTER_LEFT);
-        
-        Circle dot = new Circle(6);
-        dot.getStyleClass().add("node-dot");
-        dot.setFill(Color.web("#7c4dff"));
-        
-        Label titleLabel = new Label(title);
-        titleLabel.getStyleClass().add("node-title");
-        
-        head.getChildren().addAll(dot, titleLabel);
-        
-        // Chips
-        FlowPane chips = new FlowPane(10, 10);
-        
-        for (int i = 0; i < chipLabels.length; i++) {
-            HBox chip = new HBox(8);
-            chip.getStyleClass().add("chip");
-            chip.setAlignment(Pos.CENTER);
-            
-            Circle mini = new Circle(4);
-            mini.getStyleClass().add("chip-mini");
-            if (i < chipTypes.length && !chipTypes[i].isEmpty()) {
-                mini.getStyleClass().add(chipTypes[i]);
+        btn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(HOVER_PURPLE);
             }
             
-            Label chipLabel = new Label(chipLabels[i]);
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(LIGHT_PURPLE);
+            }
+        });
+        
+        btn.addActionListener(e -> {
+            cardLayout.show(contentPanel, panelName);
+            if (panelName.equals("PRODUCTS")) {
+                loadProducts();
+            } else if (panelName.equals("SHOPPING_CART")) {
+                updateCartDisplay();
+            }
+        });
+        
+        return btn;
+    }
+    
+    /**
+     * Create Customer Authentication Panel
+     */
+    private void createCustomerAuthPanel() {
+        customerAuthPanel = new JPanel(new GridBagLayout());
+        customerAuthPanel.setBackground(DARK_PURPLE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        
+        JLabel titleLabel = new JLabel("Customer Login");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(ACCENT_PURPLE);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        customerAuthPanel.add(titleLabel, gbc);
+        
+        gbc.gridwidth = 1;
+        JLabel userLabel = new JLabel("Username:");
+        userLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 1;
+        customerAuthPanel.add(userLabel, gbc);
+        
+        JTextField userField = new JTextField(20);
+        styleTextField(userField);
+        gbc.gridx = 1; gbc.gridy = 1;
+        customerAuthPanel.add(userField, gbc);
+        
+        JLabel passLabel = new JLabel("Password:");
+        passLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 2;
+        customerAuthPanel.add(passLabel, gbc);
+        
+        JPasswordField passField = new JPasswordField(20);
+        styleTextField(passField);
+        gbc.gridx = 1; gbc.gridy = 2;
+        customerAuthPanel.add(passField, gbc);
+        
+        JButton loginBtn = new JButton("Login");
+        styleButton(loginBtn);
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        customerAuthPanel.add(loginBtn, gbc);
+        
+        JLabel statusLabel = new JLabel("");
+        statusLabel.setForeground(ACCENT_PURPLE);
+        gbc.gridy = 4;
+        customerAuthPanel.add(statusLabel, gbc);
+        
+        loginBtn.addActionListener(e -> {
+            String username = userField.getText();
+            String password = new String(passField.getPassword());
             
-            chip.getChildren().addAll(mini, chipLabel);
-            chips.getChildren().add(chip);
+            if (!username.isEmpty() && !password.isEmpty()) {
+                currentUser = username;
+                isAdmin = false;
+                statusLabel.setText("Welcome, " + username + "!");
+                statusLabel.setForeground(Color.GREEN);
+                userField.setText("");
+                passField.setText("");
+            } else {
+                statusLabel.setText("Please enter username and password");
+                statusLabel.setForeground(Color.RED);
+            }
+        });
+    }
+    
+    /**
+     * Create Admin Authentication Panel
+     */
+    private void createAdminAuthPanel() {
+        adminAuthPanel = new JPanel(new GridBagLayout());
+        adminAuthPanel.setBackground(DARK_PURPLE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        
+        JLabel titleLabel = new JLabel("Admin Login");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(ACCENT_PURPLE);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        adminAuthPanel.add(titleLabel, gbc);
+        
+        gbc.gridwidth = 1;
+        JLabel userLabel = new JLabel("Admin ID:");
+        userLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 1;
+        adminAuthPanel.add(userLabel, gbc);
+        
+        JTextField userField = new JTextField(20);
+        styleTextField(userField);
+        gbc.gridx = 1; gbc.gridy = 1;
+        adminAuthPanel.add(userField, gbc);
+        
+        JLabel passLabel = new JLabel("Password:");
+        passLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 2;
+        adminAuthPanel.add(passLabel, gbc);
+        
+        JPasswordField passField = new JPasswordField(20);
+        styleTextField(passField);
+        gbc.gridx = 1; gbc.gridy = 2;
+        adminAuthPanel.add(passField, gbc);
+        
+        JButton loginBtn = new JButton("Admin Login");
+        styleButton(loginBtn);
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        adminAuthPanel.add(loginBtn, gbc);
+        
+        JLabel statusLabel = new JLabel("");
+        statusLabel.setForeground(ACCENT_PURPLE);
+        gbc.gridy = 4;
+        adminAuthPanel.add(statusLabel, gbc);
+        
+        loginBtn.addActionListener(e -> {
+            String username = userField.getText();
+            String password = new String(passField.getPassword());
+            
+            if (!username.isEmpty() && !password.isEmpty()) {
+                currentUser = username;
+                isAdmin = true;
+                statusLabel.setText("Admin access granted: " + username);
+                statusLabel.setForeground(Color.GREEN);
+                userField.setText("");
+                passField.setText("");
+            } else {
+                statusLabel.setText("Please enter admin credentials");
+                statusLabel.setForeground(Color.RED);
+            }
+        });
+    }
+    
+    /**
+     * Create Products Panel
+     */
+    private void createProductsPanel() {
+        productsPanel = new JPanel(new BorderLayout(10, 10));
+        productsPanel.setBackground(DARK_PURPLE);
+        productsPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        JLabel titleLabel = new JLabel("Browse Products");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(ACCENT_PURPLE);
+        productsPanel.add(titleLabel, BorderLayout.NORTH);
+        
+        productDisplayArea = new JTextArea();
+        productDisplayArea.setEditable(false);
+        productDisplayArea.setBackground(MEDIUM_PURPLE);
+        productDisplayArea.setForeground(TEXT_WHITE);
+        productDisplayArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        JScrollPane scrollPane = new JScrollPane(productDisplayArea);
+        productsPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        controlPanel.setBackground(DARK_PURPLE);
+        
+        JLabel productIdLabel = new JLabel("Product ID:");
+        productIdLabel.setForeground(TEXT_WHITE);
+        controlPanel.add(productIdLabel);
+        
+        JTextField productIdField = new JTextField(10);
+        styleTextField(productIdField);
+        controlPanel.add(productIdField);
+        
+        JButton addToCartBtn = new JButton("Add to Cart");
+        styleButton(addToCartBtn);
+        controlPanel.add(addToCartBtn);
+        
+        JButton refreshBtn = new JButton("Refresh Products");
+        styleButton(refreshBtn);
+        controlPanel.add(refreshBtn);
+        
+        productsPanel.add(controlPanel, BorderLayout.SOUTH);
+        
+        addToCartBtn.addActionListener(e -> {
+            try {
+                String productId = productIdField.getText().trim();
+                if (!productId.isEmpty() && databaseRW != null) {
+                    Product product = databaseRW.getProductDetails(productId);
+                    if (product != null) {
+                        shoppingCart.add(product);
+                        JOptionPane.showMessageDialog(this, 
+                            "Added to cart: " + product.getDescription(),
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                        productIdField.setText("");
+                    } else {
+                        JOptionPane.showMessageDialog(this, 
+                            "Product not found!", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, 
+                    "Error adding product: " + ex.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        refreshBtn.addActionListener(e -> loadProducts());
+    }
+    
+    /**
+     * Create Shopping Cart Panel
+     */
+    private void createShoppingCartPanel() {
+        shoppingCartPanel = new JPanel(new BorderLayout(10, 10));
+        shoppingCartPanel.setBackground(DARK_PURPLE);
+        shoppingCartPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        JLabel titleLabel = new JLabel("Shopping Cart");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(ACCENT_PURPLE);
+        shoppingCartPanel.add(titleLabel, BorderLayout.NORTH);
+        
+        cartDisplayArea = new JTextArea();
+        cartDisplayArea.setEditable(false);
+        cartDisplayArea.setBackground(MEDIUM_PURPLE);
+        cartDisplayArea.setForeground(TEXT_WHITE);
+        cartDisplayArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        JScrollPane scrollPane = new JScrollPane(cartDisplayArea);
+        shoppingCartPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBackground(DARK_PURPLE);
+        
+        cartTotalLabel = new JLabel("Total: £0.00");
+        cartTotalLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        cartTotalLabel.setForeground(ACCENT_PURPLE);
+        bottomPanel.add(cartTotalLabel, BorderLayout.NORTH);
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(DARK_PURPLE);
+        
+        JButton clearCartBtn = new JButton("Clear Cart");
+        styleButton(clearCartBtn);
+        buttonPanel.add(clearCartBtn);
+        
+        JButton checkoutBtn = new JButton("Checkout");
+        styleButton(checkoutBtn);
+        buttonPanel.add(checkoutBtn);
+        
+        bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
+        shoppingCartPanel.add(bottomPanel, BorderLayout.SOUTH);
+        
+        clearCartBtn.addActionListener(e -> {
+            shoppingCart.clear();
+            updateCartDisplay();
+            JOptionPane.showMessageDialog(this, "Cart cleared!", 
+                "Info", JOptionPane.INFORMATION_MESSAGE);
+        });
+        
+        checkoutBtn.addActionListener(e -> {
+            if (shoppingCart.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Cart is empty!", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            } else if (currentUser == null) {
+                JOptionPane.showMessageDialog(this, "Please login first!", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                cardLayout.show(contentPanel, "SHIPPING");
+            }
+        });
+    }
+    
+    /**
+     * Create Shipping Panel
+     */
+    private void createShippingPanel() {
+        shippingPanel = new JPanel(new GridBagLayout());
+        shippingPanel.setBackground(DARK_PURPLE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        
+        JLabel titleLabel = new JLabel("Shipping Information");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(ACCENT_PURPLE);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        shippingPanel.add(titleLabel, gbc);
+        
+        gbc.gridwidth = 1;
+        
+        JLabel nameLabel = new JLabel("Full Name:");
+        nameLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 1;
+        shippingPanel.add(nameLabel, gbc);
+        
+        JTextField nameField = new JTextField(30);
+        styleTextField(nameField);
+        gbc.gridx = 1; gbc.gridy = 1;
+        shippingPanel.add(nameField, gbc);
+        
+        JLabel addressLabel = new JLabel("Address:");
+        addressLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 2;
+        shippingPanel.add(addressLabel, gbc);
+        
+        JTextArea addressArea = new JTextArea(3, 30);
+        addressArea.setBackground(MEDIUM_PURPLE);
+        addressArea.setForeground(TEXT_WHITE);
+        addressArea.setCaretColor(TEXT_WHITE);
+        JScrollPane addressScroll = new JScrollPane(addressArea);
+        gbc.gridx = 1; gbc.gridy = 2;
+        shippingPanel.add(addressScroll, gbc);
+        
+        JLabel cityLabel = new JLabel("City:");
+        cityLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 3;
+        shippingPanel.add(cityLabel, gbc);
+        
+        JTextField cityField = new JTextField(30);
+        styleTextField(cityField);
+        gbc.gridx = 1; gbc.gridy = 3;
+        shippingPanel.add(cityField, gbc);
+        
+        JLabel postcodeLabel = new JLabel("Postcode:");
+        postcodeLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 4;
+        shippingPanel.add(postcodeLabel, gbc);
+        
+        JTextField postcodeField = new JTextField(30);
+        styleTextField(postcodeField);
+        gbc.gridx = 1; gbc.gridy = 4;
+        shippingPanel.add(postcodeField, gbc);
+        
+        JButton placeOrderBtn = new JButton("Place Order");
+        styleButton(placeOrderBtn);
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
+        shippingPanel.add(placeOrderBtn, gbc);
+        
+        placeOrderBtn.addActionListener(e -> {
+            if (nameField.getText().isEmpty() || addressArea.getText().isEmpty() ||
+                cityField.getText().isEmpty() || postcodeField.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Please fill in all shipping information!", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                String orderNum = "ORD" + System.currentTimeMillis();
+                JOptionPane.showMessageDialog(this, 
+                    "Order placed successfully!\nOrder Number: " + orderNum,
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+                
+                // Clear cart after order
+                shoppingCart.clear();
+                updateCartDisplay();
+                
+                // Clear shipping form
+                nameField.setText("");
+                addressArea.setText("");
+                cityField.setText("");
+                postcodeField.setText("");
+                
+                // Show order tracking
+                cardLayout.show(contentPanel, "ORDER_TRACKING");
+            }
+        });
+    }
+    
+    /**
+     * Create Order Tracking Panel
+     */
+    private void createOrderTrackingPanel() {
+        orderTrackingPanel = new JPanel(new BorderLayout(10, 10));
+        orderTrackingPanel.setBackground(DARK_PURPLE);
+        orderTrackingPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        JLabel titleLabel = new JLabel("Order Tracking");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(ACCENT_PURPLE);
+        orderTrackingPanel.add(titleLabel, BorderLayout.NORTH);
+        
+        orderTrackingArea = new JTextArea();
+        orderTrackingArea.setEditable(false);
+        orderTrackingArea.setBackground(MEDIUM_PURPLE);
+        orderTrackingArea.setForeground(TEXT_WHITE);
+        orderTrackingArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        orderTrackingArea.setText("No orders to track.\n\nPlace an order to see it here!");
+        JScrollPane scrollPane = new JScrollPane(orderTrackingArea);
+        orderTrackingPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        controlPanel.setBackground(DARK_PURPLE);
+        
+        JLabel orderIdLabel = new JLabel("Order Number:");
+        orderIdLabel.setForeground(TEXT_WHITE);
+        controlPanel.add(orderIdLabel);
+        
+        JTextField orderIdField = new JTextField(15);
+        styleTextField(orderIdField);
+        controlPanel.add(orderIdField);
+        
+        JButton trackBtn = new JButton("Track Order");
+        styleButton(trackBtn);
+        controlPanel.add(trackBtn);
+        
+        orderTrackingPanel.add(controlPanel, BorderLayout.SOUTH);
+        
+        trackBtn.addActionListener(e -> {
+            String orderId = orderIdField.getText().trim();
+            if (!orderId.isEmpty()) {
+                orderTrackingArea.setText("Tracking Order: " + orderId + "\n\n" +
+                    "Order Status: Processing\n" +
+                    "Estimated Delivery: 3-5 Business Days\n" +
+                    "Shipping Address: Customer Address\n\n" +
+                    "Timeline:\n" +
+                    "✓ Order Received\n" +
+                    "✓ Payment Confirmed\n" +
+                    "→ Preparing for Shipment\n" +
+                    "  In Transit\n" +
+                    "  Delivered");
+            }
+        });
+    }
+    
+    /**
+     * Load products from database
+     */
+    private void loadProducts() {
+        if (databaseRW != null) {
+            try {
+                List<Product> products = databaseRW.getAllProducts();
+                if (products != null && !products.isEmpty()) {
+                    String formattedProducts = productListFormatter.formatProductList(products);
+                    productDisplayArea.setText(formattedProducts);
+                } else {
+                    productDisplayArea.setText("No products available.");
+                }
+            } catch (Exception e) {
+                productDisplayArea.setText("Error loading products: " + e.getMessage());
+            }
+        } else {
+            productDisplayArea.setText("Database not connected. Showing sample products:\n\n" +
+                "ID    Description                Price   Stock\n" +
+                "====  =========================  ======  =====\n" +
+                "0001  Premium Headphones         £49.99    15\n" +
+                "0002  Wireless Mouse             £19.99    30\n" +
+                "0003  Mechanical Keyboard        £79.99    10\n" +
+                "0004  USB-C Cable (2m)           £9.99     50\n" +
+                "0005  Laptop Stand               £29.99    20\n" +
+                "0006  Webcam HD 1080p            £59.99    12\n" +
+                "0007  Desk Lamp LED              £24.99    25\n" +
+                "0008  External SSD 500GB         £89.99     8\n");
         }
-        
-        card.getChildren().addAll(head, chips);
-        
-        return card;
     }
     
-    private Pane createProfilePage() {
-        VBox page = new VBox(20);
-        page.setAlignment(Pos.CENTER);
-        
-        Label title = new Label("User Profile");
-        title.getStyleClass().add("form-title");
-        
-        page.getChildren().add(title);
-        return page;
+    /**
+     * Update shopping cart display
+     */
+    private void updateCartDisplay() {
+        if (shoppingCart.isEmpty()) {
+            cartDisplayArea.setText("Your cart is empty.");
+            cartTotalLabel.setText("Total: £0.00");
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Shopping Cart Items:\n\n");
+            sb.append(String.format("%-6s %-30s %10s %8s\n", 
+                "ID", "Description", "Price", "Qty"));
+            sb.append("=".repeat(60)).append("\n");
+            
+            double total = 0.0;
+            for (Product product : shoppingCart) {
+                sb.append(String.format("%-6s %-30s £%9.2f %8d\n",
+                    product.getProductNum(),
+                    product.getDescription(),
+                    product.getPrice(),
+                    1));
+                total += product.getPrice();
+            }
+            sb.append("\n").append("=".repeat(60)).append("\n");
+            
+            cartDisplayArea.setText(sb.toString());
+            cartTotalLabel.setText(String.format("Total: £%.2f", total));
+        }
     }
     
-    private Pane createSettingsPage() {
-        VBox page = new VBox(20);
-        page.setAlignment(Pos.CENTER);
-        
-        Label title = new Label("Settings");
-        title.getStyleClass().add("form-title");
-        
-        page.getChildren().add(title);
-        return page;
+    /**
+     * Style a text field
+     */
+    private void styleTextField(JTextField field) {
+        field.setBackground(MEDIUM_PURPLE);
+        field.setForeground(TEXT_WHITE);
+        field.setCaretColor(TEXT_WHITE);
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(LIGHT_PURPLE, 1),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)));
     }
     
-    private void showPage(Pane page) {
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(page);
+    /**
+     * Style a button
+     */
+    private void styleButton(JButton button) {
+        button.setBackground(LIGHT_PURPLE);
+        button.setForeground(TEXT_WHITE);
+        button.setFocusPainted(false);
+        button.setFont(new Font("Arial", Font.BOLD, 12));
+        button.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ACCENT_PURPLE, 1),
+            BorderFactory.createEmptyBorder(8, 15, 8, 15)));
+        
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(HOVER_PURPLE);
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(LIGHT_PURPLE);
+            }
+        });
+    }
+    
+    @Override
+    public void update(Observable o, Object arg) {
+        // Handle updates from Observable objects
+    }
+    
+    /**
+     * Main method for testing
+     */
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            ShoppingCenterView view = new ShoppingCenterView(null, null);
+            view.setVisible(true);
+        });
     }
 }
