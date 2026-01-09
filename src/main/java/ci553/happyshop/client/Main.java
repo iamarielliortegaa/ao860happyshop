@@ -17,8 +17,8 @@ import java.io.IOException;
 
 /**
  * The Main JavaFX application class - UPDATED
- * Now launches ONLY the new unified Shopping Center interface
- * All functionality integrated into ONE window
+ * Now launches ONLY the new unified Shopping Center interface with modern dark purple theme
+ * All functionality (Auth, Cart, Shipping, Tracking) is integrated into ONE window
  *
  * @version 3.0
  * @author  Arielli Ortega, University of Brighton
@@ -39,6 +39,8 @@ public class Main extends Application {
         startShoppingCenter();
         
         /* OLD CLIENTS - COMMENTED OUT
+         * Uncomment below if you want to launch the original interfaces
+         
         startCustomerAuth();
         startAdminAuth();
         startCartView();
@@ -52,15 +54,21 @@ public class Main extends Application {
         */
     }
 
+    /** 
+     * NEW: Shopping Center unified interface - ALL functionality in ONE window
+     */
     private void startShoppingCenter() {
         ShoppingCenterView shoppingCenter = new ShoppingCenterView();
         shoppingCenter.start(new Stage());
     }
     
+    //initialize the orderMap<orderId, orderState> for OrderHub during system startup
     private void initializeOrderMap(){
         OrderHub orderHub = OrderHub.getOrderHub();
         orderHub.initializeOrderMap();
     }
+    
+    // ========== OLD CLIENT METHODS - KEPT FOR REFERENCE ==========
     
     private void startCustomerAuth() {
         CustomerAuthView customerAuth = new CustomerAuthView();
