@@ -1,39 +1,22 @@
 package ci553.happyshop.client;
 
-import ci553.happyshop.middle.OrderHub;
-import ci553.happyshop.dbAccess.DatabaseRW;
-import ci553.happyshop.dbAccess.DatabaseRWFactory;
-import ci553.happyshop.client.shoppingcenter.ShoppingCenterView;
+import ci553.happyshop.server.DatabaseRW;
+import ci553.happyshop.server.OrderHub;
+import ci553.happyshop.shoppingcenter.ShoppingCenterView;
 
 /**
- * Main class for the Shopping Center application
- * Launches the modern Shopping Center interface
+ * Main entry point for the Happy Shop Shopping Center application.
  */
 public class Main {
-    
     public static void main(String[] args) {
-        Main app = new Main();
-        app.start();
-    }
-    
-    /**
-     * Initializes the OrderHub and launches the Shopping Center view
-     */
-    public void start() {
-        try {
-            // Initialize database connection
-            DatabaseRW db = DatabaseRWFactory.getDatabase();
-            
-            // Initialize OrderHub
-            OrderHub orderHub = new OrderHub(db);
-            
-            // Launch Shopping Center view
-            ShoppingCenterView shoppingCenter = new ShoppingCenterView(orderHub);
-            shoppingCenter.setVisible(true);
-            
-        } catch (Exception e) {
-            System.err.println("Error starting Shopping Center application: " + e.getMessage());
-            e.printStackTrace();
-        }
+        // Initialize database
+        DatabaseRW database = new DatabaseRW();
+        
+        // Initialize order hub
+        OrderHub orderHub = new OrderHub(database);
+        
+        // Launch Shopping Center View
+        ShoppingCenterView shoppingCenter = new ShoppingCenterView(database, orderHub);
+        shoppingCenter.setVisible(true);
     }
 }
