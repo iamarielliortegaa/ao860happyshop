@@ -5,86 +5,95 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 /**
- * ShoppingCenterView - Main unified view for the Shopping Center application
- * Features a sidebar navigation and dynamic content area
+ * ShoppingCenterView - Main unified interface with sidebar navigation
+ * Implements the dark purple theme shopping center design
  */
 public class ShoppingCenterView {
-    
-    private Stage primaryStage;
-    private BorderPane mainLayout;
+    private Stage stage;
+    private BorderPane root;
     private StackPane contentArea;
-    private VBox sidebar;
+    private String currentUser = "Arielli";
     
-    // Current active page
-    private String activePage = "Shop";
-    
-    // Controllers for different sections
-    private CustomerAuthController customerAuthController;
-    private AdminAuthController adminAuthController;
-    private CartController cartController;
-    private ShippingController shippingController;
-    
-    public void start(Stage stage) {
-        this.primaryStage = stage;
+    // Navigation pages
+    private Pane homePage;
+    private Pane shopPage;
+    private Pane profilePage;
+    private Pane settingsPage;
+
+    public void start(Stage window) {
+        this.stage = window;
         
-        // Initialize controllers
-        customerAuthController = new CustomerAuthController();
-        adminAuthController = new AdminAuthController();
-        cartController = new CartController();
-        shippingController = new ShippingController();
-        
-        // Create main layout
-        mainLayout = new BorderPane();
-        mainLayout.getStyleClass().add("root");
+        root = new BorderPane();
+        root.getStyleClass().add("root");
         
         // Create sidebar
-        sidebar = createSidebar();
-        mainLayout.setLeft(sidebar);
+        VBox sidebar = createSidebar();
+        root.setLeft(sidebar);
         
         // Create header
         HBox header = createHeader();
-        mainLayout.setTop(header);
         
         // Create content area
         contentArea = new StackPane();
         contentArea.getStyleClass().add("canvas");
-        mainLayout.setCenter(contentArea);
         
-        // Load initial page (Shop page with flowchart)
-        loadShopPage();
+        // Create pages
+        createPages();
         
-        // Create scene and load CSS
-        Scene scene = new Scene(mainLayout, 1200, 700);
+        // Show shop page by default
+        showPage(shopPage);
+        
+        // Combine header and content
+        VBox mainContent = new VBox(header, contentArea);
+        VBox.setVgrow(contentArea, Priority.ALWAYS);
+        root.setCenter(mainContent);
+        
+        Scene scene = new Scene(root, 1200, 700);
         scene.getStylesheets().add(getClass().getResource("/shopping-center-styles.css").toExternalForm());
         
-        stage.setScene(scene);
-        stage.setTitle("Shopping Center");
-        stage.show();
+        window.setScene(scene);
+        window.setTitle("Shopping Center");
+        window.show();
     }
     
     private VBox createSidebar() {
-        VBox sidebar = new VBox();
+        VBox sidebar = new VBox(20);
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(280);
-        sidebar.setSpacing(8);
+        sidebar.setAlignment(Pos.TOP_LEFT);
         
-        // Brand section
-        HBox brand = createBrand();
+        // Brand
+        HBox brand = new HBox(12);
+        brand.setAlignment(Pos.CENTER_LEFT);
+        
+        Label logo = new Label("SC");
+        logo.getStyleClass().add("brand-logo");
+        
+        Label brandName = new Label("Shopping Center");
+        brandName.getStyleClass().add("brand-name");
+        
+        brand.getChildren().addAll(logo, brandName);
         
         // Navigation items
         VBox nav = new VBox(8);
         nav.getStyleClass().add("nav");
         
-        nav.getChildren().addAll(
-            createNavItem("🏠", "Home", "H", false),
-            createNavItem("🛍️", "Shop", "Active", true),
-            createNavItem("👤", "Profile", "P", false),
-            createNavItem("⚙️", "Settings", "S", false)
-        );
+        HBox homeNav = createNavItem("🏠", "Home", "H", false);
+        HBox shopNav = createNavItem("🛍️", "Shop", null, true);
+        HBox profileNav = createNavItem("👤", "Profile", "P", false);
+        HBox settingsNav = createNavItem("⚙️", "Settings", "S", false);
+        
+        homeNav.setOnMouseClicked(e -> showPage(homePage));
+        shopNav.setOnMouseClicked(e -> showPage(shopPage));
+        profileNav.setOnMouseClicked(e -> showPage(profilePage));
+        settingsNav.setOnMouseClicked(e -> showPage(settingsPage));
+        
+        nav.getChildren().addAll(homeNav, shopNav, profileNav, settingsNav);
         
         // Footer
         Label footer = new Label("© 2025 Shopping Center");
@@ -94,67 +103,53 @@ public class ShoppingCenterView {
         VBox.setVgrow(spacer, Priority.ALWAYS);
         
         sidebar.getChildren().addAll(brand, nav, spacer, footer);
+        
         return sidebar;
     }
     
-    private HBox createBrand() {
-        HBox brand = new HBox(12);
-        brand.setAlignment(Pos.CENTER_LEFT);
-        brand.setPadding(new Insets(0, 0, 28, 0));
-        
-        // Logo
-        StackPane logo = new StackPane();
-        logo.getStyleClass().add("brand-logo");
-        Label logoText = new Label("SC");
-        logo.getChildren().add(logoText);
-        
-        // Brand name
-        Label brandName = new Label("Shopping Center");
-        brandName.getStyleClass().add("brand-name");
-        
-        brand.getChildren().addAll(logo, brandName);
-        return brand;
-    }
-    
-    private HBox createNavItem(String icon, String label, String badge, boolean active) {
-        HBox navItem = new HBox(12);
-        navItem.getStyleClass().add("nav-item");
+    private HBox createNavItem(String icon, String label, String kbd, boolean active) {
+        HBox item = new HBox(12);
+        item.getStyleClass().add("nav-item");
         if (active) {
-            navItem.getStyleClass().add("active");
+            item.getStyleClass().add("active");
         }
-        navItem.setAlignment(Pos.CENTER_LEFT);
+        item.setAlignment(Pos.CENTER_LEFT);
+        item.setPrefHeight(62);
         
         // Icon
-        StackPane iconPane = new StackPane();
-        iconPane.getStyleClass().add("nav-icon");
         Label iconLabel = new Label(icon);
-        iconPane.getChildren().add(iconLabel);
+        iconLabel.getStyleClass().add("nav-icon");
+        iconLabel.setAlignment(Pos.CENTER);
+        iconLabel.setMinSize(38, 38);
         
         // Label
         Label navLabel = new Label(label);
         navLabel.getStyleClass().add("nav-label");
-        HBox.setHgrow(navLabel, Priority.ALWAYS);
         
-        // Badge/Kbd
-        Label badgeLabel = new Label(badge);
-        if (badge.equals("Active")) {
-            badgeLabel.getStyleClass().add("pill");
-        } else {
-            badgeLabel.getStyleClass().add("nav-kbd");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        item.getChildren().addAll(iconLabel, navLabel, spacer);
+        
+        // Keyboard shortcut or active pill
+        if (active) {
+            Label pill = new Label("Active");
+            pill.getStyleClass().add("pill");
+            item.getChildren().add(pill);
+        } else if (kbd != null) {
+            Label kbdLabel = new Label(kbd);
+            kbdLabel.getStyleClass().add("nav-kbd");
+            item.getChildren().add(kbdLabel);
         }
         
-        navItem.getChildren().addAll(iconPane, navLabel, badgeLabel);
-        
-        // Click handler
-        navItem.setOnMouseClicked(e -> handleNavigation(label));
-        
-        return navItem;
+        return item;
     }
     
     private HBox createHeader() {
         HBox header = new HBox(16);
         header.getStyleClass().add("header");
         header.setAlignment(Pos.CENTER_LEFT);
+        header.setPrefHeight(66);
         
         // Title
         Label title = new Label("Shopping Center");
@@ -164,6 +159,7 @@ public class ShoppingCenterView {
         HBox searchBox = new HBox(10);
         searchBox.getStyleClass().add("search-box");
         searchBox.setAlignment(Pos.CENTER_LEFT);
+        searchBox.setMaxWidth(400);
         HBox.setHgrow(searchBox, Priority.ALWAYS);
         
         Label searchIcon = new Label("🔎");
@@ -174,98 +170,89 @@ public class ShoppingCenterView {
         
         searchBox.getChildren().addAll(searchIcon, searchField);
         
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
         // Profile
         HBox profile = new HBox(14);
         profile.setAlignment(Pos.CENTER);
         
-        Label profileName = new Label("Arielli");
+        Label profileName = new Label(currentUser);
         profileName.getStyleClass().add("profile-name");
         
         Circle avatar = new Circle(19);
         avatar.getStyleClass().add("avatar");
+        avatar.setFill(Color.web("#a07cff"));
         
         profile.getChildren().addAll(profileName, avatar);
         
-        header.getChildren().addAll(title, searchBox, profile);
+        header.getChildren().addAll(title, searchBox, spacer, profile);
+        
         return header;
     }
     
-    private void handleNavigation(String page) {
-        activePage = page;
-        
-        switch (page) {
-            case "Home":
-                loadHomePage();
-                break;
-            case "Shop":
-                loadShopPage();
-                break;
-            case "Profile":
-                loadProfilePage();
-                break;
-            case "Settings":
-                loadSettingsPage();
-                break;
-        }
-        
-        // Update active state in sidebar
-        updateSidebarActiveState(page);
+    private void createPages() {
+        homePage = createHomePage();
+        shopPage = createShopPage();
+        profilePage = createProfilePage();
+        settingsPage = createSettingsPage();
     }
     
-    private void loadShopPage() {
-        contentArea.getChildren().clear();
+    private Pane createHomePage() {
+        VBox page = new VBox(20);
+        page.setAlignment(Pos.CENTER);
         
-        // Create flowchart canvas with nodes
+        Label welcome = new Label("Welcome to Shopping Center");
+        welcome.getStyleClass().add("form-title");
+        
+        page.getChildren().add(welcome);
+        return page;
+    }
+    
+    private Pane createShopPage() {
         Pane canvas = new Pane();
-        canvas.setPrefSize(1200, 800);
+        canvas.setPrefSize(1200, 700);
         
-        // Customer Authentication Node
-        VBox customerAuthNode = createNode("Customer authentication", 40, 30,
+        // Create node cards with positioning
+        VBox customerAuth = createNodeCard("Customer authentication", 
             new String[]{"Registration", "Login", "Forgot password"},
             new String[]{"", "login", "danger"});
+        customerAuth.setLayoutX(40);
+        customerAuth.setLayoutY(30);
         
-        // Admin Authentication Node
-        VBox adminAuthNode = createNode("Admin authentication", 420, 30,
+        VBox adminAuth = createNodeCard("Admin authentication",
             new String[]{"Login"},
             new String[]{"login"});
+        adminAuth.setLayoutX(420);
+        adminAuth.setLayoutY(30);
         
-        // Cart Node
-        VBox cartNode = createNode("Add to cart", 800, 30,
+        VBox cart = createNodeCard("Add to cart",
             new String[]{"Login"},
             new String[]{"login"});
+        cart.setLayoutX(800);
+        cart.setLayoutY(30);
         
-        // Shipping Node
-        VBox shippingNode = createNode("Shipping", 420, 260,
+        VBox shipping = createNodeCard("Shipping",
             new String[]{"Delivery"},
             new String[]{"delivery"});
+        shipping.setLayoutX(420);
+        shipping.setLayoutY(260);
         
-        // Sendings Node
-        VBox sendingsNode = createNode("Sendings", 800, 260,
+        VBox sendings = createNodeCard("Sendings",
             new String[]{"Delivery"},
             new String[]{"delivery"});
+        sendings.setLayoutX(800);
+        sendings.setLayoutY(260);
         
-        // Add click handlers to nodes
-        customerAuthNode.setOnMouseClicked(e -> customerAuthController.showCustomerAuth(contentArea));
-        adminAuthNode.setOnMouseClicked(e -> adminAuthController.showAdminAuth(contentArea));
-        cartNode.setOnMouseClicked(e -> cartController.showCart(contentArea));
-        shippingNode.setOnMouseClicked(e -> shippingController.showShipping(contentArea));
-        sendingsNode.setOnMouseClicked(e -> shippingController.showSendings(contentArea));
+        canvas.getChildren().addAll(customerAuth, adminAuth, cart, shipping, sendings);
         
-        canvas.getChildren().addAll(customerAuthNode, adminAuthNode, cartNode, shippingNode, sendingsNode);
-        
-        ScrollPane scrollPane = new ScrollPane(canvas);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
-        
-        contentArea.getChildren().add(scrollPane);
+        return canvas;
     }
     
-    private VBox createNode(String title, double x, double y, String[] chips, String[] chipStyles) {
-        VBox node = new VBox(12);
-        node.getStyleClass().add("node-card");
-        node.setLayoutX(x);
-        node.setLayoutY(y);
-        node.setPrefWidth(320);
+    private VBox createNodeCard(String title, String[] chipLabels, String[] chipTypes) {
+        VBox card = new VBox(12);
+        card.getStyleClass().add("node-card");
+        card.setPrefWidth(320);
         
         // Header
         HBox head = new HBox(12);
@@ -273,6 +260,7 @@ public class ShoppingCenterView {
         
         Circle dot = new Circle(6);
         dot.getStyleClass().add("node-dot");
+        dot.setFill(Color.web("#7c4dff"));
         
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("node-title");
@@ -280,73 +268,54 @@ public class ShoppingCenterView {
         head.getChildren().addAll(dot, titleLabel);
         
         // Chips
-        FlowPane chipsPane = new FlowPane(10, 10);
+        FlowPane chips = new FlowPane(10, 10);
         
-        for (int i = 0; i < chips.length; i++) {
+        for (int i = 0; i < chipLabels.length; i++) {
             HBox chip = new HBox(8);
             chip.getStyleClass().add("chip");
             chip.setAlignment(Pos.CENTER);
             
             Circle mini = new Circle(4);
             mini.getStyleClass().add("chip-mini");
-            if (i < chipStyles.length && !chipStyles[i].isEmpty()) {
-                mini.getStyleClass().add(chipStyles[i]);
+            if (i < chipTypes.length && !chipTypes[i].isEmpty()) {
+                mini.getStyleClass().add(chipTypes[i]);
             }
             
-            Label chipLabel = new Label(chips[i]);
+            Label chipLabel = new Label(chipLabels[i]);
             
             chip.getChildren().addAll(mini, chipLabel);
-            chipsPane.getChildren().add(chip);
+            chips.getChildren().add(chip);
         }
         
-        node.getChildren().addAll(head, chipsPane);
-        return node;
+        card.getChildren().addAll(head, chips);
+        
+        return card;
     }
     
-    private void loadHomePage() {
+    private Pane createProfilePage() {
+        VBox page = new VBox(20);
+        page.setAlignment(Pos.CENTER);
+        
+        Label title = new Label("User Profile");
+        title.getStyleClass().add("form-title");
+        
+        page.getChildren().add(title);
+        return page;
+    }
+    
+    private Pane createSettingsPage() {
+        VBox page = new VBox(20);
+        page.setAlignment(Pos.CENTER);
+        
+        Label title = new Label("Settings");
+        title.getStyleClass().add("form-title");
+        
+        page.getChildren().add(title);
+        return page;
+    }
+    
+    private void showPage(Pane page) {
         contentArea.getChildren().clear();
-        Label label = new Label("Home Page - Coming Soon");
-        label.setStyle("-fx-font-size: 24px; -fx-text-fill: #eae6f7;");
-        contentArea.getChildren().add(label);
-    }
-    
-    private void loadProfilePage() {
-        contentArea.getChildren().clear();
-        Label label = new Label("Profile Page - Coming Soon");
-        label.setStyle("-fx-font-size: 24px; -fx-text-fill: #eae6f7;");
-        contentArea.getChildren().add(label);
-    }
-    
-    private void loadSettingsPage() {
-        contentArea.getChildren().clear();
-        Label label = new Label("Settings Page - Coming Soon");
-        label.setStyle("-fx-font-size: 24px; -fx-text-fill: #eae6f7;");
-        contentArea.getChildren().add(label);
-    }
-    
-    private void updateSidebarActiveState(String activePage) {
-        // This would update the sidebar to reflect the active page
-        // For simplicity, we'll recreate the sidebar
-        sidebar.getChildren().clear();
-        
-        HBox brand = createBrand();
-        
-        VBox nav = new VBox(8);
-        nav.getStyleClass().add("nav");
-        
-        nav.getChildren().addAll(
-            createNavItem("🏠", "Home", "H", activePage.equals("Home")),
-            createNavItem("🛍️", "Shop", "Active", activePage.equals("Shop")),
-            createNavItem("👤", "Profile", "P", activePage.equals("Profile")),
-            createNavItem("⚙️", "Settings", "S", activePage.equals("Settings"))
-        );
-        
-        Label footer = new Label("© 2025 Shopping Center");
-        footer.getStyleClass().add("sidebar-footer");
-        
-        Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
-        
-        sidebar.getChildren().addAll(brand, nav, spacer, footer);
+        contentArea.getChildren().add(page);
     }
 }

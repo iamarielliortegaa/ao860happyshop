@@ -2,33 +2,49 @@ package ci553.happyshop.client.shoppingcenter;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 
 /**
- * CustomerAuthView - Handles customer authentication
- * Provides Registration, Login, and Forgot Password functionality
+ * Customer Authentication View - handles registration, login, and password recovery
  */
-public class CustomerAuthView extends VBox {
+public class CustomerAuthView {
     
-    private TextField usernameField;
-    private PasswordField passwordField;
-    private TextField emailField;
-    private String currentMode = "login"; // login, register, forgot
+    private VBox loginForm;
+    private VBox registerForm;
+    private VBox forgotPasswordForm;
+    private StackPane contentArea;
     
-    public CustomerAuthView() {
-        setSpacing(20);
-        setAlignment(Pos.CENTER);
-        setPadding(new Insets(40));
+    public void start(Stage window) {
+        BorderPane root = new BorderPane();
+        root.getStyleClass().add("root");
         
-        showLoginForm();
+        contentArea = new StackPane();
+        contentArea.setPadding(new Insets(50));
+        
+        createForms();
+        showLogin();
+        
+        root.setCenter(contentArea);
+        
+        Scene scene = new Scene(root, 500, 600);
+        scene.getStylesheets().add(getClass().getResource("/shopping-center-styles.css").toExternalForm());
+        
+        window.setScene(scene);
+        window.setTitle("Customer Authentication");
+        window.show();
     }
     
-    private void showLoginForm() {
-        currentMode = "login";
-        getChildren().clear();
-        
-        VBox form = new VBox(16);
+    private void createForms() {
+        loginForm = createLoginForm();
+        registerForm = createRegisterForm();
+        forgotPasswordForm = createForgotPasswordForm();
+    }
+    
+    private VBox createLoginForm() {
+        VBox form = new VBox(20);
         form.getStyleClass().add("form-container");
         form.setMaxWidth(400);
         form.setAlignment(Pos.CENTER);
@@ -36,189 +52,129 @@ public class CustomerAuthView extends VBox {
         Label title = new Label("Customer Login");
         title.getStyleClass().add("form-title");
         
-        // Username field
-        VBox usernameBox = new VBox(8);
-        Label usernameLabel = new Label("Username");
-        usernameLabel.getStyleClass().add("form-label");
-        usernameField = new TextField();
-        usernameField.getStyleClass().add("form-field");
-        usernameField.setPromptText("Enter your username");
-        usernameBox.getChildren().addAll(usernameLabel, usernameField);
+        VBox emailGroup = new VBox(8);
+        Label emailLabel = new Label("Email");
+        emailLabel.getStyleClass().add("form-label");
+        TextField emailField = new TextField();
+        emailField.setPromptText("Enter your email");
+        emailField.getStyleClass().add("form-field");
+        emailGroup.getChildren().addAll(emailLabel, emailField);
         
-        // Password field
-        VBox passwordBox = new VBox(8);
+        VBox passwordGroup = new VBox(8);
         Label passwordLabel = new Label("Password");
         passwordLabel.getStyleClass().add("form-label");
-        passwordField = new PasswordField();
-        passwordField.getStyleClass().add("form-field");
+        PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Enter your password");
-        passwordBox.getChildren().addAll(passwordLabel, passwordField);
+        passwordField.getStyleClass().add("form-field");
+        passwordGroup.getChildren().addAll(passwordLabel, passwordField);
         
-        // Buttons
-        Button loginBtn = new Button("Login");
-        loginBtn.getStyleClass().add("primary-button");
-        loginBtn.setMaxWidth(Double.MAX_VALUE);
-        loginBtn.setOnAction(e -> handleLogin());
+        Button loginButton = new Button("Login");
+        loginButton.getStyleClass().add("primary-button");
+        loginButton.setMaxWidth(Double.MAX_VALUE);
         
-        HBox linkBox = new HBox(10);
-        linkBox.setAlignment(Pos.CENTER);
+        HBox links = new HBox(20);
+        links.setAlignment(Pos.CENTER);
+        Hyperlink registerLink = new Hyperlink("Create account");
+        registerLink.setOnAction(e -> showRegister());
+        Hyperlink forgotLink = new Hyperlink("Forgot password?");
+        forgotLink.setOnAction(e -> showForgotPassword());
+        links.getChildren().addAll(registerLink, forgotLink);
         
-        Hyperlink registerLink = new Hyperlink("Register");
-        registerLink.setStyle("-fx-text-fill: #7c4dff;");
-        registerLink.setOnAction(e -> showRegisterForm());
+        form.getChildren().addAll(title, emailGroup, passwordGroup, loginButton, links);
         
-        Hyperlink forgotLink = new Hyperlink("Forgot Password?");
-        forgotLink.setStyle("-fx-text-fill: #7c4dff;");
-        forgotLink.setOnAction(e -> showForgotPasswordForm());
-        
-        linkBox.getChildren().addAll(registerLink, new Label("|"), forgotLink);
-        
-        form.getChildren().addAll(title, usernameBox, passwordBox, loginBtn, linkBox);
-        
-        getChildren().add(form);
+        return form;
     }
     
-    private void showRegisterForm() {
-        currentMode = "register";
-        getChildren().clear();
-        
-        VBox form = new VBox(16);
+    private VBox createRegisterForm() {
+        VBox form = new VBox(20);
         form.getStyleClass().add("form-container");
         form.setMaxWidth(400);
         form.setAlignment(Pos.CENTER);
         
-        Label title = new Label("Customer Registration");
+        Label title = new Label("Create Account");
         title.getStyleClass().add("form-title");
         
-        // Username field
-        VBox usernameBox = new VBox(8);
-        Label usernameLabel = new Label("Username");
-        usernameLabel.getStyleClass().add("form-label");
-        usernameField = new TextField();
-        usernameField.getStyleClass().add("form-field");
-        usernameField.setPromptText("Choose a username");
-        usernameBox.getChildren().addAll(usernameLabel, usernameField);
+        VBox nameGroup = new VBox(8);
+        Label nameLabel = new Label("Full Name");
+        nameLabel.getStyleClass().add("form-label");
+        TextField nameField = new TextField();
+        nameField.setPromptText("Enter your name");
+        nameField.getStyleClass().add("form-field");
+        nameGroup.getChildren().addAll(nameLabel, nameField);
         
-        // Email field
-        VBox emailBox = new VBox(8);
+        VBox emailGroup = new VBox(8);
         Label emailLabel = new Label("Email");
         emailLabel.getStyleClass().add("form-label");
-        emailField = new TextField();
-        emailField.getStyleClass().add("form-field");
+        TextField emailField = new TextField();
         emailField.setPromptText("Enter your email");
-        emailBox.getChildren().addAll(emailLabel, emailField);
+        emailField.getStyleClass().add("form-field");
+        emailGroup.getChildren().addAll(emailLabel, emailField);
         
-        // Password field
-        VBox passwordBox = new VBox(8);
+        VBox passwordGroup = new VBox(8);
         Label passwordLabel = new Label("Password");
         passwordLabel.getStyleClass().add("form-label");
-        passwordField = new PasswordField();
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Create a password");
         passwordField.getStyleClass().add("form-field");
-        passwordField.setPromptText("Choose a password");
-        passwordBox.getChildren().addAll(passwordLabel, passwordField);
+        passwordGroup.getChildren().addAll(passwordLabel, passwordField);
         
-        // Buttons
-        Button registerBtn = new Button("Register");
-        registerBtn.getStyleClass().add("primary-button");
-        registerBtn.setMaxWidth(Double.MAX_VALUE);
-        registerBtn.setOnAction(e -> handleRegister());
+        Button registerButton = new Button("Register");
+        registerButton.getStyleClass().add("primary-button");
+        registerButton.setMaxWidth(Double.MAX_VALUE);
         
-        Button backBtn = new Button("Back to Login");
-        backBtn.getStyleClass().add("secondary-button");
-        backBtn.setMaxWidth(Double.MAX_VALUE);
-        backBtn.setOnAction(e -> showLoginForm());
+        Hyperlink backLink = new Hyperlink("Back to login");
+        backLink.setOnAction(e -> showLogin());
         
-        form.getChildren().addAll(title, usernameBox, emailBox, passwordBox, registerBtn, backBtn);
+        form.getChildren().addAll(title, nameGroup, emailGroup, passwordGroup, registerButton, backLink);
         
-        getChildren().add(form);
+        return form;
     }
     
-    private void showForgotPasswordForm() {
-        currentMode = "forgot";
-        getChildren().clear();
-        
-        VBox form = new VBox(16);
+    private VBox createForgotPasswordForm() {
+        VBox form = new VBox(20);
         form.getStyleClass().add("form-container");
         form.setMaxWidth(400);
         form.setAlignment(Pos.CENTER);
         
-        Label title = new Label("Forgot Password");
+        Label title = new Label("Reset Password");
         title.getStyleClass().add("form-title");
         
-        Label instructions = new Label("Enter your email to reset your password");
-        instructions.setStyle("-fx-text-fill: #bfb6dd;");
+        Label instruction = new Label("Enter your email to receive a password reset link");
+        instruction.getStyleClass().add("form-label");
+        instruction.setWrapText(true);
         
-        // Email field
-        VBox emailBox = new VBox(8);
+        VBox emailGroup = new VBox(8);
         Label emailLabel = new Label("Email");
         emailLabel.getStyleClass().add("form-label");
-        emailField = new TextField();
-        emailField.getStyleClass().add("form-field");
+        TextField emailField = new TextField();
         emailField.setPromptText("Enter your email");
-        emailBox.getChildren().addAll(emailLabel, emailField);
+        emailField.getStyleClass().add("form-field");
+        emailGroup.getChildren().addAll(emailLabel, emailField);
         
-        // Buttons
-        Button resetBtn = new Button("Reset Password");
-        resetBtn.getStyleClass().add("primary-button");
-        resetBtn.setMaxWidth(Double.MAX_VALUE);
-        resetBtn.setOnAction(e -> handleForgotPassword());
+        Button resetButton = new Button("Send Reset Link");
+        resetButton.getStyleClass().add("primary-button");
+        resetButton.setMaxWidth(Double.MAX_VALUE);
         
-        Button backBtn = new Button("Back to Login");
-        backBtn.getStyleClass().add("secondary-button");
-        backBtn.setMaxWidth(Double.MAX_VALUE);
-        backBtn.setOnAction(e -> showLoginForm());
+        Hyperlink backLink = new Hyperlink("Back to login");
+        backLink.setOnAction(e -> showLogin());
         
-        form.getChildren().addAll(title, instructions, emailBox, resetBtn, backBtn);
+        form.getChildren().addAll(title, instruction, emailGroup, resetButton, backLink);
         
-        getChildren().add(form);
+        return form;
     }
     
-    private void handleLogin() {
-        String username = usernameField.getText();
-        String password = passwordField.getText();
-        
-        if (username.isEmpty() || password.isEmpty()) {
-            showAlert("Error", "Please fill in all fields");
-            return;
-        }
-        
-        // TODO: Integrate with existing authentication system
-        showAlert("Success", "Login successful for user: " + username);
+    private void showLogin() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(loginForm);
     }
     
-    private void handleRegister() {
-        String username = usernameField.getText();
-        String email = emailField.getText();
-        String password = passwordField.getText();
-        
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            showAlert("Error", "Please fill in all fields");
-            return;
-        }
-        
-        // TODO: Integrate with database to create new user
-        showAlert("Success", "Registration successful! You can now login.");
-        showLoginForm();
+    private void showRegister() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(registerForm);
     }
     
-    private void handleForgotPassword() {
-        String email = emailField.getText();
-        
-        if (email.isEmpty()) {
-            showAlert("Error", "Please enter your email");
-            return;
-        }
-        
-        // TODO: Implement password reset logic
-        showAlert("Success", "Password reset link sent to: " + email);
-        showLoginForm();
-    }
-    
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    private void showForgotPassword() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(forgotPasswordForm);
     }
 }
