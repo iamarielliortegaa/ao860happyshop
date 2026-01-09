@@ -97,11 +97,12 @@
     -fx-padding: 10 14 10 14;
 }
 
-.search-box .text-field {
+.search-field {
     -fx-background-color: transparent;
     -fx-text-fill: #eae6f7;
     -fx-prompt-text-fill: #bfb6dd;
     -fx-font-size: 14px;
+    -fx-border-width: 0;
 }
 
 .profile-name {
@@ -132,6 +133,13 @@
     -fx-font-weight: bold;
 }
 
+.node-dot {
+    -fx-background-color: #7c4dff;
+    -fx-background-radius: 50%;
+    -fx-pref-width: 12;
+    -fx-pref-height: 12;
+}
+
 .chip {
     -fx-background-color: #2a1848;
     -fx-border-color: rgba(255, 255, 255, 0.08);
@@ -142,11 +150,31 @@
     -fx-text-fill: #bfb6dd;
     -fx-font-weight: 600;
     -fx-font-size: 13px;
+    -fx-cursor: hand;
 }
 
 .chip:hover {
     -fx-background-color: #3a2262;
     -fx-text-fill: #eae6f7;
+}
+
+.chip-mini {
+    -fx-background-color: #a07cff;
+    -fx-background-radius: 50%;
+    -fx-pref-width: 8;
+    -fx-pref-height: 8;
+}
+
+.chip-mini.login {
+    -fx-background-color: #5c2cf3;
+}
+
+.chip-mini.delivery {
+    -fx-background-color: #5ce6b8;
+}
+
+.chip-mini.danger {
+    -fx-background-color: #ff5a8a;
 }
 
 .form-container {
