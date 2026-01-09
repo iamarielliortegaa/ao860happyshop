@@ -4,8 +4,6 @@ import ci553.happyshop.client.shoppingcenter.ShoppingCenterView;
 import ci553.happyshop.dbAccess.DatabaseRW;
 import ci553.happyshop.dbAccess.DatabaseRWFactory;
 import ci553.happyshop.middle.OrderHub;
-import javafx.application.Application;
-import javafx.stage.Stage;
 
 import javax.swing.SwingUtilities;
 
@@ -17,7 +15,7 @@ import javax.swing.SwingUtilities;
  * @version 4.0
  * @author Arielli Ortega, University of Brighton
  */
-public class Main extends Application {
+public class Main {
 
     public static void main(String[] args) {
         // Launch Shopping Center using Swing
@@ -28,19 +26,6 @@ public class Main extends Application {
             orderHub.initializeOrderMap();
             
             // Launch the modernized Shopping Center
-            ShoppingCenterView shoppingCenter = new ShoppingCenterView(databaseRW, orderHub);
-            shoppingCenter.setVisible(true);
-        });
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        // JavaFX application start - redirects to Swing Shopping Center
-        SwingUtilities.invokeLater(() -> {
-            DatabaseRW databaseRW = DatabaseRWFactory.createDatabaseRW();
-            OrderHub orderHub = OrderHub.getOrderHub();
-            orderHub.initializeOrderMap();
-            
             ShoppingCenterView shoppingCenter = new ShoppingCenterView(databaseRW, orderHub);
             shoppingCenter.setVisible(true);
         });

@@ -44,6 +44,7 @@ public class ShoppingCenterView extends JFrame implements Observer {
     private JButton btnProducts;
     
     // Content panels
+    private JPanel welcomePanel;
     private JPanel customerAuthPanel;
     private JPanel adminAuthPanel;
     private JPanel shoppingCartPanel;
@@ -103,6 +104,7 @@ public class ShoppingCenterView extends JFrame implements Observer {
         contentPanel.setBackground(DARK_PURPLE);
         
         // Create all panels
+        createWelcomePanel();
         createCustomerAuthPanel();
         createAdminAuthPanel();
         createProductsPanel();
@@ -111,6 +113,7 @@ public class ShoppingCenterView extends JFrame implements Observer {
         createOrderTrackingPanel();
         
         // Add panels to content area
+        contentPanel.add(welcomePanel, "WELCOME");
         contentPanel.add(customerAuthPanel, "CUSTOMER_AUTH");
         contentPanel.add(adminAuthPanel, "ADMIN_AUTH");
         contentPanel.add(productsPanel, "PRODUCTS");
@@ -122,8 +125,8 @@ public class ShoppingCenterView extends JFrame implements Observer {
         add(sidebarPanel, BorderLayout.WEST);
         add(contentPanel, BorderLayout.CENTER);
         
-        // Show customer auth by default
-        cardLayout.show(contentPanel, "CUSTOMER_AUTH");
+        // Show welcome panel by default
+        cardLayout.show(contentPanel, "WELCOME");
     }
     
     /**
@@ -203,6 +206,132 @@ public class ShoppingCenterView extends JFrame implements Observer {
         });
         
         return btn;
+    }
+    
+    /**
+     * Create Welcome Panel
+     */
+    private void createWelcomePanel() {
+        welcomePanel = new JPanel(new GridBagLayout());
+        welcomePanel.setBackground(DARK_PURPLE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(20, 20, 20, 20);
+        
+        // Main container for centered content
+        JPanel contentBox = new JPanel();
+        contentBox.setLayout(new BoxLayout(contentBox, BoxLayout.Y_AXIS));
+        contentBox.setBackground(DARK_PURPLE);
+        
+        // Welcome Title
+        JLabel titleLabel = new JLabel("Welcome to Shopping Center");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 48));
+        titleLabel.setForeground(ACCENT_PURPLE);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        contentBox.add(titleLabel);
+        
+        contentBox.add(Box.createRigidArea(new Dimension(0, 20)));
+        
+        // Subtitle
+        JLabel subtitleLabel = new JLabel("Your modern shopping experience");
+        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        subtitleLabel.setForeground(TEXT_WHITE);
+        subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        contentBox.add(subtitleLabel);
+        
+        contentBox.add(Box.createRigidArea(new Dimension(0, 40)));
+        
+        // Features panel
+        JPanel featuresPanel = new JPanel();
+        featuresPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 10));
+        featuresPanel.setBackground(DARK_PURPLE);
+        
+        // Feature 1: Browse Products
+        JPanel feature1 = createFeatureCard("🛍️", "Browse Products", "Explore our catalog");
+        featuresPanel.add(feature1);
+        
+        // Feature 2: Shopping Cart
+        JPanel feature2 = createFeatureCard("🛒", "Shopping Cart", "Manage your items");
+        featuresPanel.add(feature2);
+        
+        // Feature 3: Order Tracking
+        JPanel feature3 = createFeatureCard("📦", "Order Tracking", "Track your orders");
+        featuresPanel.add(feature3);
+        
+        contentBox.add(featuresPanel);
+        
+        contentBox.add(Box.createRigidArea(new Dimension(0, 40)));
+        
+        // Get Started Button
+        JButton getStartedBtn = new JButton("Get Started");
+        getStartedBtn.setFont(new Font("Arial", Font.BOLD, 18));
+        getStartedBtn.setBackground(ACCENT_PURPLE);
+        getStartedBtn.setForeground(DARK_PURPLE);
+        getStartedBtn.setFocusPainted(false);
+        getStartedBtn.setBorderPainted(false);
+        getStartedBtn.setPreferredSize(new Dimension(200, 50));
+        getStartedBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        getStartedBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                getStartedBtn.setBackground(LIGHT_PURPLE);
+                getStartedBtn.setForeground(TEXT_WHITE);
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                getStartedBtn.setBackground(ACCENT_PURPLE);
+                getStartedBtn.setForeground(DARK_PURPLE);
+            }
+        });
+        
+        getStartedBtn.addActionListener(e -> {
+            cardLayout.show(contentPanel, "PRODUCTS");
+            loadProducts();
+        });
+        
+        contentBox.add(getStartedBtn);
+        
+        welcomePanel.add(contentBox, gbc);
+    }
+    
+    /**
+     * Create a feature card for the welcome panel
+     */
+    private JPanel createFeatureCard(String icon, String title, String description) {
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(MEDIUM_PURPLE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(LIGHT_PURPLE, 2),
+            new EmptyBorder(20, 20, 20, 20)));
+        card.setPreferredSize(new Dimension(180, 150));
+        
+        // Icon
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setFont(new Font("Arial", Font.PLAIN, 48));
+        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        card.add(iconLabel);
+        
+        card.add(Box.createRigidArea(new Dimension(0, 15)));
+        
+        // Title
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setForeground(ACCENT_PURPLE);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        card.add(titleLabel);
+        
+        card.add(Box.createRigidArea(new Dimension(0, 8)));
+        
+        // Description
+        JLabel descLabel = new JLabel(description);
+        descLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        descLabel.setForeground(TEXT_WHITE);
+        descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        card.add(descLabel);
+        
+        return card;
     }
     
     /**
@@ -525,9 +654,22 @@ public class ShoppingCenterView extends JFrame implements Observer {
         gbc.gridx = 1; gbc.gridy = 4;
         shippingPanel.add(postcodeField, gbc);
         
+        JLabel deliveryLabel = new JLabel("Delivery Method:");
+        deliveryLabel.setForeground(TEXT_WHITE);
+        gbc.gridx = 0; gbc.gridy = 5;
+        shippingPanel.add(deliveryLabel, gbc);
+        
+        String[] deliveryOptions = {"Standard (3-5 days)", "Express (1-2 days)", "Next Day", "Click & Collect"};
+        JComboBox<String> deliveryCombo = new JComboBox<>(deliveryOptions);
+        deliveryCombo.setBackground(MEDIUM_PURPLE);
+        deliveryCombo.setForeground(TEXT_WHITE);
+        deliveryCombo.setFont(new Font("Arial", Font.PLAIN, 12));
+        gbc.gridx = 1; gbc.gridy = 5;
+        shippingPanel.add(deliveryCombo, gbc);
+        
         JButton placeOrderBtn = new JButton("Place Order");
         styleButton(placeOrderBtn);
-        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2;
         shippingPanel.add(placeOrderBtn, gbc);
         
         placeOrderBtn.addActionListener(e -> {
