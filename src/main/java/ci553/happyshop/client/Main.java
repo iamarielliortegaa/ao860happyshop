@@ -1,60 +1,67 @@
 package ci553.happyshop.client;
 
+import ci553.happyshop.client.customer.*;
+import ci553.happyshop.client.emergency.EmergencyExit;
+import ci553.happyshop.client.orderTracker.OrderTracker;
+import ci553.happyshop.client.picker.PickerController;
+import ci553.happyshop.client.picker.PickerModel;
+import ci553.happyshop.client.picker.PickerView;
+import ci553.happyshop.client.warehouse.*;
 import ci553.happyshop.client.shoppingcenter.*;
 import ci553.happyshop.orderManagement.OrderHub;
+import ci553.happyshop.storageAccess.DatabaseRW;
+import ci553.happyshop.storageAccess.DatabaseRWFactory;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import java.io.IOException;
 
 /**
- * The Main JavaFX application class. The Main class is executable directly.
- * 
- * UPDATED VERSION 3.0: Now launches ONLY the new unified Shopping Center interface
- * All functionality is contained within a single modern GUI window.
+ * The Main JavaFX application class - UPDATED
+ * Now launches ONLY the new unified Shopping Center interface
+ * All functionality integrated into ONE window
  *
  * @version 3.0
- * @author  Arielli Ortega - University of Brighton
+ * @author  Arielli Ortega, University of Brighton
  */
 
 public class Main extends Application {
 
     public static void main(String[] args) {
-        launch(args); // Launches the JavaFX application and calls the @Override start()
+        launch(args);
     }
 
     @Override
     public void start(Stage window) throws IOException {
-        // Initialize the order map for the OrderHub
+        // Initialize OrderHub first
         initializeOrderMap();
         
         // Launch ONLY the new unified Shopping Center interface
-        // All functionality (Customer Auth, Admin Auth, Cart, Shipping, Tracking) 
-        // is contained within this single window
-        startShoppingCenter(window);
+        startShoppingCenter();
+        
+        /* OLD CLIENTS - COMMENTED OUT
+        startCustomerAuth();
+        startAdminAuth();
+        startCartView();
+        startShippingView();
+        startSendingsView();
+        startCustomerClient();
+        startPickerClient();
+        startOrderTracker();
+        startWarehouseClient();
+        startEmergencyExit();
+        */
     }
 
-    /** 
-     * Shopping Center unified interface with modern GUI
-     * Contains all functionality in one window with tab-based navigation
-     */
-    private void startShoppingCenter(Stage window) {
+    private void startShoppingCenter() {
         ShoppingCenterView shoppingCenter = new ShoppingCenterView();
-        shoppingCenter.start(window);
+        shoppingCenter.start(new Stage());
     }
-
-    // Initialize the orderMap<orderId, orderState> for OrderHub during system startup
+    
     private void initializeOrderMap(){
         OrderHub orderHub = OrderHub.getOrderHub();
         orderHub.initializeOrderMap();
     }
     
-    /* ========== OLD CLIENTS - COMMENTED OUT ==========
-     * The following clients are no longer launched automatically.
-     * All functionality has been integrated into the new Shopping Center interface.
-     * Uncomment if needed for development/testing purposes.
-     */
-    
-    /*
     private void startCustomerAuth() {
         CustomerAuthView customerAuth = new CustomerAuthView();
         customerAuth.start(new Stage());
@@ -133,5 +140,4 @@ public class Main extends Application {
     private void startEmergencyExit(){
         EmergencyExit.getEmergencyExit();
     }
-    */
 }
