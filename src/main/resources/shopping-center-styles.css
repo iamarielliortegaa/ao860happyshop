@@ -97,12 +97,11 @@
     -fx-padding: 10 14 10 14;
 }
 
-.search-field {
+.search-box .text-field {
     -fx-background-color: transparent;
     -fx-text-fill: #eae6f7;
     -fx-prompt-text-fill: #bfb6dd;
     -fx-font-size: 14px;
-    -fx-border-width: 0;
 }
 
 .profile-name {
@@ -150,7 +149,6 @@
     -fx-text-fill: #bfb6dd;
     -fx-font-weight: 600;
     -fx-font-size: 13px;
-    -fx-cursor: hand;
 }
 
 .chip:hover {
