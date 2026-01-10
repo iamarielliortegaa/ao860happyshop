@@ -1,5 +1,6 @@
 package ci553.happyshop.client;
 
+import ci553.happyshop.client.shoppingcenter.ShoppingCenterView;
 import javax.swing.SwingUtilities;
 
 /**
@@ -14,7 +15,7 @@ public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // Launch the modernized Shopping Center
-            ShoppingCenterSwing shoppingCenter = new ShoppingCenterSwing();
+            ShoppingCenterView shoppingCenter = new ShoppingCenterView(null, null);
             shoppingCenter.setVisible(true);
         });
     }
