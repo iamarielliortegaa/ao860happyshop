@@ -1,0 +1,3 @@
+username,displayName,password,admin
+admin,Administrator,adminpass,true
+customer,Demo Customer,custpass,false

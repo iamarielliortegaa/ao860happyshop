@@ -1,0 +1,17 @@
+2026-01-11T16:14:37.046211600Z - AddToCart: guest -> p030 x1
+2026-01-11T16:52:43.065534700Z - AddToCart: guest -> p021 x1
+2026-01-11T16:53:31.916168300Z - AddToCart: guest -> p013 x2
+2026-01-11T16:53:48.027443600Z - AddToCart: guest -> p011 x1
+2026-01-11T16:54:18.274589Z - AddToCart: guest -> p015 x1
+2026-01-11T16:55:55.675727700Z - Review: guest -> p015 rating:5
+2026-01-11T16:56:34.684783600Z - AddToCart: guest -> p016 x1
+2026-01-11T16:57:56.816480500Z - AddToCart: guest -> p025 x1
+2026-01-11T16:58:41.101012500Z - AddToCart: guest -> p024 x1
+2026-01-11T16:58:43.473677700Z - AddToCart: guest -> p001 x1
+2026-01-11T16:59:01.214261300Z - AddToCart: guest -> p022 x1
+2026-01-11T16:59:26.823998900Z - AddToCart: guest -> p006 x2
+2026-01-11T17:06:08.383290400Z - Order created: ORD-1768151168345 for user: Georgette Myrie
+2026-01-11T17:06:08.498723200Z - Order placed by Georgette Myrie - Order ID: ORD-1768151168345
+2026-01-11T17:09:09.826966400Z - Role switched to Customer
+2026-01-11T17:11:10.821198400Z - Logout: customer
+2026-01-11T18:08:19.585516100Z - Logout: admin

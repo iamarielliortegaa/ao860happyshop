@@ -1,0 +1,18 @@
+Order #: 1
+Customer: Georgette Myrie
+
+Resistance Bands x1 @ $19.99 = $19.99
+Indoor Plant Pot x2 @ $15.99 = $31.98
+Water Bottle 1L x1 @ $14.99 = $14.99
+Wireless Headphones x1 @ $79.99 = $79.99
+Coffee Maker x1 @ $89.99 = $89.99
+Dumbbells 10kg Set x1 @ $59.99 = $59.99
+Cotton T-Shirt x2 @ $19.99 = $39.98
+Programming Book x1 @ $45.99 = $45.99
+Kitchen Knife Set x1 @ $79.99 = $79.99
+Yoga Mat x1 @ $29.99 = $29.99
+
+Subtotal: $492.88
+Total: $492.88
+
+Thank you for your order!
