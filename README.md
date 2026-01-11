@@ -23,3 +23,4 @@ Notes
 - If you see missing `mvn` command, install Maven or run from an IDE (IntelliJ) and run the `Main` class.
 
 If you run into any build/test failures, paste the Maven output and I'll fix them immediately.
+# ao860happyshop-modern-ui
