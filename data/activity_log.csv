@@ -1,0 +1,14 @@
+timestamp,action,details
+2026-01-11 23:52:35,Login,admin
+2026-01-11 23:53:29,Logout,admin
+2026-01-11 23:53:39,Login,customer
+2026-01-12 04:01:01,AddToCart,guest -> p025 x1
+2026-01-12 04:03:03,AddToCart,guest -> p022 x1
+2026-01-12 04:04:25,Cart remove,guest -> p022
+2026-01-12 04:06:58,Login,customer
+2026-01-12 04:12:27,Logout,customer
+2026-01-12 04:13:09,Login,admin
+2026-01-12 04:16:14,Logout,admin
+2026-01-12 04:17:04,Login,customer
+2026-01-12 04:17:57,Logout,customer
+2026-01-12 04:19:46,Login,customer
