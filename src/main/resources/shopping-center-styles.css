@@ -1,13 +1,10 @@
-/* Shopping Center Dark Purple Theme for JavaFX */
+
 
 .root {
     -fx-background-color: linear-gradient(to bottom right, #1a0f30 0%, #130923 50%, #0e071a 100%);
     -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
-/* ========================================
-   LIGHT MODE THEME
-   ======================================== */
 .light-mode {
     -fx-background-color: linear-gradient(to bottom right, #f5f7fa 0%, #e8eef5 50%, #dce4f0 100%);
 }
