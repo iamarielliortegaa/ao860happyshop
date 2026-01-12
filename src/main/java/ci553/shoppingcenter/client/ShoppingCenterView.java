@@ -547,36 +547,64 @@ public class ShoppingCenterView extends Application {
             Label subtotalLabel = new Label(String.format("Subtotal: $%.2f", orderSubtotal));
             subtotalLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-            TextField discountCode = new TextField();
-            discountCode.setPromptText("Discount code");
-            discountCode.getStyleClass().add("form-field");
-            discountCode.setPrefWidth(150);
+            // Discount section with available codes hint
+            VBox discountSection = new VBox(8);
+            Label discountHeader = new Label("💰 Discount Code");
+            discountHeader.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
-            Button applyDiscount = new Button("Apply");
+            // Show available codes
+            Map<String, Integer> availableCodes = discountService.listAll();
+            StringBuilder codesHint = new StringBuilder("Available codes: ");
+            availableCodes.forEach((code, pct) -> codesHint.append(code).append(" (").append(pct).append("%), "));
+            String codesHintText = codesHint.substring(0, codesHint.length() - 2); // Remove trailing ", "
+
+            Label codesLabel = new Label(codesHintText);
+            codesLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #7c4dff; -fx-font-style: italic;");
+            codesLabel.setWrapText(true);
+
+            TextField discountCode = new TextField();
+            discountCode.setPromptText("Enter discount code");
+            discountCode.getStyleClass().add("form-field");
+            discountCode.setPrefWidth(200);
+
+            Button applyDiscount = new Button("Apply Code");
             applyDiscount.getStyleClass().add("secondary-button");
 
             Label discountInfo = new Label();
             discountInfo.getStyleClass().add("muted");
 
             final int[] appliedDiscount = {0};
+            final double[] finalAmount = {orderSubtotal}; // Track final amount after discount
+
             applyDiscount.setOnAction(evt -> {
                 String code = discountCode.getText().trim();
                 if (code.isEmpty()) {
-                    discountInfo.setText("Please enter a code");
+                    discountInfo.setText("⚠️ Please enter a discount code");
+                    discountInfo.setStyle("-fx-text-fill: #ff9800;");
                     return;
                 }
                 int pct = discountService.validateCode(code);
                 appliedDiscount[0] = pct;
                 if (pct > 0) {
-                    discountInfo.setText("Applied " + pct + "% discount");
-                    discountInfo.setStyle("-fx-text-fill: #5ce6b8;");
                     double discounted = orderSubtotal * (1.0 - pct / 100.0);
-                    subtotalLabel.setText(String.format("Subtotal: $%.2f (-%d%% = $%.2f)", orderSubtotal, pct, discounted));
+                    finalAmount[0] = discounted;
+                    discountInfo.setText("✅ Successfully applied " + pct + "% discount!");
+                    discountInfo.setStyle("-fx-text-fill: #5ce6b8; -fx-font-weight: bold;");
+                    subtotalLabel.setText(String.format("Subtotal: $%.2f\nDiscount (-%d%%): -$%.2f\nTotal: $%.2f",
+                        orderSubtotal, pct, orderSubtotal - discounted, discounted));
+                    subtotalLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #7c4dff;");
                 } else {
-                    discountInfo.setText("Invalid code");
-                    discountInfo.setStyle("-fx-text-fill: #ff5a8a;");
+                    discountInfo.setText("❌ Invalid code. Please check available codes above.");
+                    discountInfo.setStyle("-fx-text-fill: #ff5a8a; -fx-font-weight: bold;");
+                    finalAmount[0] = orderSubtotal;
                 }
             });
+
+            HBox discountInputRow = new HBox(8);
+            discountInputRow.setAlignment(Pos.CENTER_LEFT);
+            discountInputRow.getChildren().addAll(discountCode, applyDiscount);
+
+            discountSection.getChildren().addAll(discountHeader, codesLabel, discountInputRow, discountInfo);
 
             Button pay = new Button("Proceed to Checkout");
             pay.getStyleClass().add("primary-button");
@@ -614,8 +642,8 @@ public class ShoppingCenterView extends Application {
                     return; // User cancelled
                 }
 
-                // Show payment dialog
-                boolean paymentOk = showPaymentDialog(orderSubtotal);
+                // Show payment dialog with final discounted amount
+                boolean paymentOk = showPaymentDialog(finalAmount[0]);
                 if (!paymentOk) return;
 
                 // Create order ID
@@ -662,13 +690,10 @@ public class ShoppingCenterView extends Application {
                 showToast("Order placed successfully! Order ID: " + orderId);
             });
 
-            HBox discountRow = new HBox(8, new Label("Discount:"), discountCode, applyDiscount, discountInfo);
-            discountRow.setAlignment(Pos.CENTER_LEFT);
-
-            root.getChildren().addAll(subtotalLabel, discountRow, pay);
+            root.getChildren().addAll(subtotalLabel, discountSection, pay);
         }
 
-        Scene s = new Scene(root, 750, 550);
+        Scene s = new Scene(root, 750, 600);
         dlg.setScene(s);
         dlg.showAndWait();
     }
