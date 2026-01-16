@@ -1,51 +1,41 @@
-Shopping Center - Modern E-Commerce Application v2.0
-A complete, modern e-commerce platform with **order tracking**, **shipping management**, and a beautiful dual-theme UI.
+ao860happyshop is a Java-based desktop shopping management system developed for the CI553 Object-Oriented Development and Testing module at the University of Brighton.
 
-Quick Start:
+The application supports both administrative and customer workflows and is built using Java and JavaFX, following a layered MVC architecture. The codebase is intentionally structured to be clean, readable, and easy to navigate, with a strong focus on maintainability and separation of concerns.
 
-### Run Application
-bash
-Windows
-.\mvnw.cmd clean javafx:run
+Getting Started / How to Run
+Prerequisites
 
-Linux/Mac  
-./mvnw clean javafx:run
+Java JDK 17 (or compatible version)
 
-Or with Maven
-mvn clean javafx:run
-```
+IntelliJ IDEA (recommended) or another Java IDE
 
-First Launch
-- 30 products load automatically
-- Browse without login
-- Register to track orders
+JavaFX properly configured (bundled or added as a dependency)
+
+Running the Application
+
+Clone the repository:
+
+git clone https://github.com/iamarielliortegaa/ao860happyshop.git
 
 
-Key Features
+Open the project in IntelliJ IDEA.
 
-Shopping:
-- 30 products across 6 categories
-- Search, filter, sort
-- Ratings & reviews
-- Wishlist
+Ensure JavaFX is correctly configured:
 
-### Checkout
-- 🛒 Smart shopping cart
-- Shipping information (address, postal, city, country)
-- Payment simulation
-- Invoice export (PDF/text)
+VM options may be required, for example:
 
-Order Tracking
-- 6-stage status progression
-- Visual progress timeline
-- Delivery tracking
-- Estimated delivery dates
+--module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml
 
-User System
-- Login & Registration
-- Admin/Customer roles
-- Order history
 
+Locate the main application class and run it from the IDE.
+
+The application will launch as a desktop JavaFX interface.
+
+Data Storage
+
+Application data is stored locally using CSV files.
+
+If data files are missing or empty, they are automatically recreated on startup.
 
 Project Structure:
 
